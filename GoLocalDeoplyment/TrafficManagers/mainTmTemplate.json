@@ -7,11 +7,11 @@
       "type": "String"
     },
     "ComputeTrafficManager1_Name": {
-      "defaultValue": "tm1",
+      "defaultValue": "loc1-conversations-tm",
       "type": "String"
     },
     "ComputeTrafficManager2_Name": {
-      "defaultValue": "tm2",
+      "defaultValue": "loc2-conversations-tm",
       "type": "String"
     },
     "TrafficManager_ResourceId_ForPrimaryCompute": {
@@ -47,7 +47,7 @@
       "properties": {
         "mode": "Incremental",
         "templateLink": {
-          "uri": "https://gist.githubusercontent.com/videokojot/a7335b5ec9be12fe72dc62ddaff06ce0/raw/14116ae6bfb1b7bb09c6da16de95d0091b7b05df/linkedtm.json",
+          "uri": "https://raw.githubusercontent.com/videokojot/tests/master/GoLocalDeoplyment/TrafficManagers/computeTrafficManager.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {

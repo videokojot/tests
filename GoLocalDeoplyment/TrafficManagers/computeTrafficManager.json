@@ -52,7 +52,6 @@
             "properties": {
               "endpointStatus": "Enabled",
               "targetResourceId": "[parameters('TrafficManager_ResourceId_ForPrimaryCompute')]",
-              "target": "[reference(parameters('TrafficManager_ResourceId_ForPrimaryCompute'),'2018-04-01','Full').properties.dnsConfig.fqdn]",
               "weight": 1,
               "priority": 1
             }
@@ -64,7 +63,6 @@
             "properties": {
               "endpointStatus": "Enabled",
               "targetResourceId": "[parameters('TrafficManager_ResourceId_ForSecondaryCompute')]",
-              "target": "[reference(parameters('TrafficManager_ResourceId_ForSecondaryCompute'),'2018-04-01','Full').properties.dnsConfig.fqdn]",
               "weight": 1,
               "priority": 2
             }
