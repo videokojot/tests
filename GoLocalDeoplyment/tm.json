@@ -1,0 +1,72 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "trafficManagerProfiles_name": {
+      "defaultValue": null,
+      "type": "String"
+    },
+    "primaryEndpoint": {
+      "defaultValue": "/subscriptions/2d21e173-e881-4221-8935-bc23aab2b056/resourceGroups/sea-conversations/providers/Microsoft.ClassicCompute/domainNames/sea-conversations",
+      "type": "String"
+    },
+    "secondaryEndpoint": {
+      "defaultValue": "/subscriptions/2d21e173-e881-4221-8935-bc23aab2b056/resourceGroups/ea-conversations/providers/Microsoft.ClassicCompute/domainNames/ea-conversations",
+      "type": "String"
+    }
+  },
+  "variables": {},
+  "resources": [
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2018-04-01",
+      "name": "[parameters('trafficManagerProfiles_name')]",
+      "location": "global",
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Priority",
+        "dnsConfig": {
+          "relativeName": "[parameters('trafficManagerProfiles_name')]",
+          "ttl": 60
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/ping",
+          "intervalInSeconds": 30,
+          "toleratedNumberOfFailures": 3,
+          "timeoutInSeconds": 10
+        },
+        "endpoints": [
+          {
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('trafficManagerProfiles_name')), '/azureEndpoints/sea')]",
+            "name": "sea",
+            "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+            "properties": {
+              "endpointStatus": "Enabled",
+              "targetResourceId": "[parameters('primaryEndpoint')]",
+              "target": "[concat(parameters('trafficManagerProfiles_name'), '.cloudapp.net')]",
+              "weight": 1,
+              "priority": 1,
+              "endpointLocation": "Southeast Asia"
+            }
+          },
+          {
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('trafficManagerProfiles_name')), '/azureEndpoints/ea')]",
+            "name": "ea",
+            "type": "Microsoft.Network/trafficManagerProfiles/azureEndpoints",
+            "properties": {
+              "endpointStatus": "Enabled",
+              "targetResourceId": "[parameters('secondaryEndpoint')]",
+              "target": "ea-conversations.cloudapp.net",
+              "weight": 1,
+              "priority": 2,
+              "endpointLocation": "East Asia"
+            }
+          }
+        ],
+        "trafficViewEnrollmentStatus": "Disabled"
+      }
+    }
+  ]
+}

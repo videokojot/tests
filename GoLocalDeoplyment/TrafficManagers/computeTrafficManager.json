@@ -1,0 +1,95 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "ComputeTrafficManager_Name": {
+      "defaultValue": "ComputePriorityTrafficManager",
+      "type": "String"
+    },
+    "TrafficManager_ResourceId_ForPrimaryCompute": {
+      "type": "String",
+      "defaultValue": null
+    },
+    "Primary_Endpoint_Name": {
+      "type": "String",
+      "defaultValue": "Primary"
+    },
+    "TrafficManager_ResourceId_ForSecondaryCompute": {
+      "type": "String",
+      "defaultValue": null
+    },
+    "Secondary_Endpoint_Name": {
+      "type": "String",
+      "defaultValue": "Secondary"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2018-04-01",
+      "name": "[parameters('ComputeTrafficManager_Name')]",
+      "location": "global",
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Priority",
+        "dnsConfig": {
+          "relativeName": "[parameters('ComputeTrafficManager_Name')]",
+          "ttl": 60
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/ping",
+          "intervalInSeconds": 30,
+          "toleratedNumberOfFailures": 3,
+          "timeoutInSeconds": 10
+        },
+        "endpoints": [
+          {
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('ComputeTrafficManager_Name')), '/nestedEndpoints/', parameters('Primary_Endpoint_Name'))]",
+            "name": "[parameters('Primary_Endpoint_Name')]",
+            "type": "Microsoft.Network/trafficManagerProfiles/nestedEndpoints",
+            "properties": {
+              "endpointStatus": "Enabled",
+              "targetResourceId": "[parameters('TrafficManager_ResourceId_ForPrimaryCompute')]",
+              "target": "[reference(parameters('TrafficManager_ResourceId_ForPrimaryCompute'),'2018-04-01','Full').properties.dnsConfig.fqdn]",
+              "weight": 1,
+              "priority": 1
+            }
+          },
+          {
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('ComputeTrafficManager_Name')), '/nestedEndpoints/', parameters('Secondary_Endpoint_Name'))]",
+            "name": "[parameters('Secondary_Endpoint_Name')]",
+            "type": "Microsoft.Network/trafficManagerProfiles/nestedEndpoints",
+            "properties": {
+              "endpointStatus": "Enabled",
+              "targetResourceId": "[parameters('TrafficManager_ResourceId_ForSecondaryCompute')]",
+              "target": "[reference(parameters('TrafficManager_ResourceId_ForSecondaryCompute'),'2018-04-01','Full').properties.dnsConfig.fqdn]",
+              "weight": 1,
+              "priority": 2
+            }
+          }
+        ],
+        "trafficViewEnrollmentStatus": "Disabled"
+      }
+    }
+  ],
+  "outputs": {
+    "deployedTrafficManager_full": {
+      "type": "object",
+      "value": "[reference(parameters('ComputeTrafficManager_Name'),'2018-04-01','Full')]"
+    },
+    "deployedTrafficManager_props": {
+      "type": "object",
+      "value": "[reference(parameters('ComputeTrafficManager_Name'),'2018-04-01')]"
+    },
+    "primaryEndpoint_full": {
+      "type": "object",
+      "value": "[reference(parameters('TrafficManager_ResourceId_ForPrimaryCompute'),'2018-04-01','Full')]"
+    },
+    "primaryEndpoint_onlyProps": {
+      "type": "object",
+      "value": "[reference(parameters('TrafficManager_ResourceId_ForPrimaryCompute'),'2018-04-01')]"
+    }
+  }
+}

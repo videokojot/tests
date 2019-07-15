@@ -1,0 +1,108 @@
+﻿{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "TopLevelTrafficManagerName": {
+      "defaultValue": "TopLevelPerformanceTrafficManager",
+      "type": "String"
+    },
+    "ComputeTrafficManager1_Name": {
+      "defaultValue": "tm1",
+      "type": "String"
+    },
+    "ComputeTrafficManager2_Name": {
+      "defaultValue": "tm2",
+      "type": "String"
+    },
+    "TrafficManager_ResourceId_ForPrimaryCompute": {
+      "defaultValue": "/subscriptions/b3a98c89-6707-4355-860c-a74e90be9a20/resourceGroups/test/providers/Microsoft.Network/trafficManagerProfiles/submanager1",
+      "type": "String"
+    },
+    "TrafficManager_ResourceId_ForSecondaryCompute": {
+      "defaultValue": "/subscriptions/b3a98c89-6707-4355-860c-a74e90be9a20/resourceGroups/test/providers/Microsoft.Network/trafficManagerProfiles/submanager2",
+      "type": "String"
+    },
+    "Endpoint1_Name": {
+      "defaultValue": "ea",
+      "type": "String"
+    },
+    "Endpoint1_Location": {
+      "defaultValue": "East Asia",
+      "type": "String"
+    },
+    "Endpoint2_Name": {
+      "defaultValue": "sea",
+      "type": "String"
+    },
+    "Endpoint2_Location": {
+      "defaultValue": "South East Asia",
+      "type": "String"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2018-05-01",
+      "name": "deployedTm_1",
+      "properties": {
+        "mode": "Incremental",
+        "templateLink": {
+          "uri": "https://gist.githubusercontent.com/videokojot/a7335b5ec9be12fe72dc62ddaff06ce0/raw/14116ae6bfb1b7bb09c6da16de95d0091b7b05df/linkedtm.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "ComputeTrafficManager_Name": { "value": "[parameters('ComputeTrafficManager1_Name')]" },
+
+          "TrafficManager_ResourceId_ForPrimaryCompute": { "value": "[parameters('TrafficManager_ResourceId_ForPrimaryCompute')]" },
+          "Primary_Endpoint_Name": { "value": "[parameters('Endpoint1_Name')]" },
+
+          "TrafficManager_ResourceId_ForSecondaryCompute": { "value": "[parameters('TrafficManager_ResourceId_ForSecondaryCompute')]" },
+          "Secondary_Endpoint_Name": { "value": "[parameters('Endpoint2_Name')]" }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/trafficManagerProfiles",
+      "apiVersion": "2018-04-01",
+      "name": "[parameters('TopLevelTrafficManagerName')]",
+      "location": "global",
+      "properties": {
+        "profileStatus": "Enabled",
+        "trafficRoutingMethod": "Performance",
+        "dnsConfig": {
+          "relativeName": "[parameters('TopLevelTrafficManagerName')]",
+          "ttl": 60
+        },
+        "monitorConfig": {
+          "protocol": "HTTPS",
+          "port": 443,
+          "path": "/ping",
+          "intervalInSeconds": 30,
+          "toleratedNumberOfFailures": 3,
+          "timeoutInSeconds": 10
+        },
+        "endpoints": [
+          {
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('ComputeTrafficManager1_Name')), '/nestedEndpoints/', parameters('ComputeTrafficManager1_Name'))]",
+            "name": "[parameters('Endpoint1_Name')]",
+            "type": "Microsoft.Network/trafficManagerProfiles/nestedEndpoints",
+            "properties": {
+              "endpointStatus": "Enabled",
+              "targetResourceId": "[reference('deployedTm_1').outputResources[0].id]",
+              "weight": 1,
+              "priority": 1,
+              "endpointLocation": "[parameters('Endpoint1_Location')]"
+            }
+          }
+        ],
+        "trafficViewEnrollmentStatus": "Disabled"
+      }
+    }
+  ],
+  "outputs": {
+    "deployedTrafficManager_full": {
+      "type": "object",
+      "value": "[reference(parameters('TopLevelTrafficManagerName'),'2018-04-01','Full')]"
+    }
+  }
+}
