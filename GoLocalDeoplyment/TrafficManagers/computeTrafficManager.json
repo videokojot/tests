@@ -21,14 +21,29 @@
     "Secondary_Endpoint_Name": {
       "type": "String",
       "defaultValue": "Secondary"
+    },
+    "PrimaryLocation": {
+      "type": "String",
+      "defaultValue": null
     }
   },
   "resources": [
+    {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2018-05-01",
+      "location": "[parameters('PrimaryLocation')]",
+      "name": "[concat(parameters('ComputeTrafficManager_Name'),'-tm')]",
+      "properties": {}
+    },
     {
       "type": "Microsoft.Network/trafficManagerProfiles",
       "apiVersion": "2018-04-01",
       "name": "[parameters('ComputeTrafficManager_Name')]",
       "location": "global",
+      "resourceGroup": "[concat(parameters('ComputeTrafficManager_Name'),'-tm')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups/', concat(parameters('ComputeTrafficManager_Name'),'-tm'))]"
+      ],
       "properties": {
         "profileStatus": "Enabled",
         "trafficRoutingMethod": "Priority",

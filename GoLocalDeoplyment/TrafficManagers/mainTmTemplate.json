@@ -3,15 +3,15 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "TopLevelTrafficManagerName": {
-      "defaultValue": "loc-conversation-tm",
+      "defaultValue": "loc-conversation",
       "type": "String"
     },
     "ComputeTrafficManager1_Name": {
-      "defaultValue": "loc1-conversation-tm",
+      "defaultValue": "loc1-conversation",
       "type": "String"
     },
     "ComputeTrafficManager2_Name": {
-      "defaultValue": "loc2-conversation-tm",
+      "defaultValue": "loc2-conversation",
       "type": "String"
     },
     "TrafficManager_ResourceId_ForCompute_1": {
@@ -41,6 +41,13 @@
   },
   "resources": [
     {
+      "type": "Microsoft.Resources/resourceGroups",
+      "apiVersion": "2018-05-01",
+      "location": "[parameters('Endpoint1_Location')]",
+      "name": "[concat(parameters('TopLevelTrafficManagerName'),'-tm')]",
+      "properties": {}
+    },
+    {
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2018-05-01",
       "name": "deployedTm_1",
@@ -57,7 +64,9 @@
           "Primary_Endpoint_Name": { "value": "[parameters('Endpoint1_Name')]" },
 
           "TrafficManager_ResourceId_ForSecondaryCompute": { "value": "[parameters('TrafficManager_ResourceId_ForCompute_2')]" },
-          "Secondary_Endpoint_Name": { "value": "[parameters('Endpoint2_Name')]" }
+          "Secondary_Endpoint_Name": { "value": "[parameters('Endpoint2_Name')]" },
+
+          "PrimaryLocation": { "value": "[parameters('Endpoint1_Location')]" }
         }
       }
     },
@@ -72,13 +81,15 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "ComputeTrafficManager_Name": { "value": "[parameters('ComputeTrafficManager1_Name')]" },
+          "ComputeTrafficManager_Name": { "value": "[parameters('ComputeTrafficManager2_Name')]" },
 
           "TrafficManager_ResourceId_ForPrimaryCompute": { "value": "[parameters('TrafficManager_ResourceId_ForCompute_2')]" },
           "Primary_Endpoint_Name": { "value": "[parameters('Endpoint2_Name')]" },
 
           "TrafficManager_ResourceId_ForSecondaryCompute": { "value": "[parameters('TrafficManager_ResourceId_ForCompute_1')]" },
-          "Secondary_Endpoint_Name": { "value": "[parameters('Endpoint1_Name')]" }
+          "Secondary_Endpoint_Name": { "value": "[parameters('Endpoint1_Name')]" },
+
+          "PrimaryLocation": { "value": "[parameters('Endpoint2_Location')]" }
         }
       }
     },
@@ -87,6 +98,10 @@
       "apiVersion": "2018-04-01",
       "name": "[parameters('TopLevelTrafficManagerName')]",
       "location": "global",
+      "resourceGroup": "[concat(parameters('TopLevelTrafficManagerName'),'-tm')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/resourceGroups/', concat(parameters('TopLevelTrafficManagerName'),'-tm'))]"
+      ],
       "properties": {
         "profileStatus": "Enabled",
         "trafficRoutingMethod": "Performance",
