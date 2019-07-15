@@ -3,15 +3,15 @@
   "contentVersion": "1.0.0.0",
   "parameters": {
     "TopLevelTrafficManagerName": {
-      "defaultValue": "TopLevelPerformanceTrafficManager",
+      "defaultValue": "loc-conversation-tm",
       "type": "String"
     },
     "ComputeTrafficManager1_Name": {
-      "defaultValue": "loc1-conversations-tm",
+      "defaultValue": "loc1-conversation-tm",
       "type": "String"
     },
     "ComputeTrafficManager2_Name": {
-      "defaultValue": "loc2-conversations-tm",
+      "defaultValue": "loc2-conversation-tm",
       "type": "String"
     },
     "TrafficManager_ResourceId_ForPrimaryCompute": {
@@ -23,7 +23,7 @@
       "type": "String"
     },
     "Endpoint1_Name": {
-      "defaultValue": "ea",
+      "defaultValue": "loc1",
       "type": "String"
     },
     "Endpoint1_Location": {
@@ -31,7 +31,7 @@
       "type": "String"
     },
     "Endpoint2_Name": {
-      "defaultValue": "sea",
+      "defaultValue": "loc2",
       "type": "String"
     },
     "Endpoint2_Location": {
@@ -83,7 +83,7 @@
         },
         "endpoints": [
           {
-            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('ComputeTrafficManager1_Name')), '/nestedEndpoints/', parameters('ComputeTrafficManager1_Name'))]",
+            "id": "[concat(resourceId('Microsoft.Network/trafficManagerProfiles', parameters('TopLevelTrafficManagerName')), '/nestedEndpoints/', parameters('Endpoint1_Name'))]",
             "name": "[parameters('Endpoint1_Name')]",
             "type": "Microsoft.Network/trafficManagerProfiles/nestedEndpoints",
             "properties": {
